@@ -1,0 +1,2 @@
+#!/bin/bash
+su postgres -c "createuser --no-superuser --no-createdb --no-createrole $1; createdb $1 -O $1"

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+FILENAME="rbpkg-packages-report"
+
+# Move what happened yeterday to old log
+
+if [ -f /var/log/$FILENAME.log ]; then
+	mv /var/log/$FILENAME.log /var/log/$FILENAME.log.old
+fi
+
+if [ -f /var/log/$FILENAME.daily ]; then
+	rm /var/log/$FILENAME.daily
+fi
+
+# log packages here today
+
+find ~rbpkg/packages -type f -name "*.deb" > /var/log/$FILENAME.log
+
+for package in $(cat /var/log/$FILENAME.log /var/log/$FILENAME.log.old /var/log/$FILENAME.log.old | sort | uniq -u) ; do
+	LINES=$(apt-listchanges -f text -a $package 2>/dev/null | grep -m1 -n " -- " | awk -F: '{print $1}')
+	apt-listchanges -f text -a $package 2> /dev/null | head -n$LINES >> /var/log/$FILENAME.daily
+	echo >> /var/log/$FILENAME.daily
+done
+
+if [ -s /var/log/$FILENAME.daily ]; then
+	cat /var/log/$FILENAME.daily | mutt -s "RB Package Report" system-reports@redbrick.dcu.ie
+fi

@@ -1,0 +1,35 @@
+WE FUCKING HATE THIS
+
+Stop the Ldap server daemon slapd
+
+Take diff using ldapsearch -xLLL -y /etc/ldap.secret -D cn=root,ou=ldap,o=redbrick > rb.ldif
+
+Run newyear_ldif.py against rb.ldif
+using syntax: newyear_ldif.py <rb.ldif >rb.decrement.ldif
+
+Change this to an Ldapmodify format using newyear_ldapmodify_ldif.py
+Using syntax: newyear_ldapmodify_ldif.py rb.decrement.ldif > rb.decrement.ldapUpload.ldif
+
+This breaks shit.
+
+Upload this broken ldif using:
+ldapmodify -x -D cn=root,ou=ldap,o=redbrick -y /etc/ldap.secret -f rb.decrement.ldapUpload.ldif
+
+Run Query against this DB using this command and output results to ldif.
+ldapsearch -D cn=root,ou=ldap,o=redbrick -y /etc/ldap.secret -xLLL "(|(objectClass=club)(objectClass=society)(objectClass=projects)(objectClass=redbrick)(objectClass=dcu)(objectClass=intersoc)(objectClass=founders))" > rb.preFix.ldif
+
+Run ldif_founder_soc_fix.py against rb.preFix.ldif 
+using syntax: ldif_founder_soc_fix.py < rb.preFix.ldif > rb.Fix.ldif
+
+Change this to ldapmodify friendly format using:
+newyear_ldapmodify_ldif.py rb.Fix.ldif > rb.Fix.ldapUpload.ldif
+
+Upload shiny new ldif.
+
+ldapmodify -x -D cn=root,ou=ldap,o=redbrick -y /etc/ldap.secret -f rb.Fix.ldapUpload.ldif
+
+????
+
+Profit!
+
+<3 zergless & koffee

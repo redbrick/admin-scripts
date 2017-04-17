@@ -1,0 +1,8 @@
+!#/bin/bash
+
+if [ ! "`uname -n`" == "daniel" ]; then
+	echo for now this needs to be run on daniel
+	exit 1
+fi
+
+set IP=tail /srv/admin/

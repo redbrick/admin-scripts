@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Quick ldap search tool
+# ver 0.1 sonic - I will never ever update this
+# ver 0.2 koffee - quick update & shell checking
+
+SCRIPTNAME="rbsearch"
+EMAIL="bill.gates@hotmail.com"
+USERNAME="microbg"
+FULLNAME="Bill Gates"
+
+SEARCH="ldapsearch -D cn=root,ou=ldap,o=redbrick -xLLL -y /etc/ldap.secret"
+
+
+case $1 in
+	-update)
+		if [ ! -z $3 ]; then
+			$SEARCH "cn=*$2*$3" uid yearsPaid loginShell
+		else
+			echo "Usage: $SCRIPTNAME -fullname $FULLNAME"
+		fi
+
+	;;
+	-altmail)
+		$SEARCH "altmail=$2" uid
+	;;
+	-uid)
+		$SEARCH "uid=$2"
+	;;
+	-id)
+		$SEARCH "id=$2" uid
+	;;
+	-name)
+		$SEARCH "cn=*$2*" uid
+	;;
+	-nick)
+		$SEARCH "gecos=*$2*" uid
+	;;
+	-fullname)
+		if [ ! -z $3 ]; then
+			$SEARCH "cn=*$2*$3" uid
+		else
+			echo "Usage: $SCRIPTNAME -fullname $FULLNAME"
+		fi
+	;;
+	-newbie)
+		$SEARCH "newbie=TRUE" uid
+	;;
+	-h)
+		echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] -[nick] -[fullname] query"
+		echo "eg. $SCRIPTNAME -altmail $EMAIL"
+		echo "    $SCRIPTNAME -uid $USERNAME"
+		echo "    $SCRIPTNAME -fullname $FULLNAME"
+		echo "    $SCRIPTNAME -update $USERNAME"
+		echo ""
+		echo "Only fullname takes 2 arguments."
+		echo "All results will give just uid(s) apart from [-uid]"
+		echo "[-uid] prints all ldap info for that uid"
+	;;
+	*)
+		echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] -[nick] -[fullname] query"
+		echo "eg. $SCRIPTNAME -altmail $EMAIL"
+		echo "    $SCRIPTNAME -uid $USERNAME"
+		echo "    $SCRIPTNAME -fullname $FULLNAME"
+		echo "    $SCRIPTNAME -update $USERNAME"
+		echo ""
+		echo "Only fullname takes 2 arguments."
+		echo "All results will give just uid(s) apart from [-uid]"
+	;;
+esac

@@ -1,0 +1,85 @@
+#!/bin/bash
+
+# File Permissions checker for logwatch
+# by Andrew Harford
+# receive@redbrick.dcu.ie
+
+###############
+# /root stuff #
+###############
+
+exit 0
+
+echo
+echo "-------------[ /root permissions ]------------------"
+root_permission=$(stat /root | grep -c "Access: (0700/drwx------)")
+if [ $root_permission -ne 1 ]
+then
+	echo "WARNING: The permissions on /root are NOT 0700"
+else
+	echo "info: The permissions on /root are normal"
+fi
+
+echo
+find /root -type f -perm -o=r -printf "%m \t %P \n"
+
+echo
+find /root -type f -not -gid 0 -not -uid 0 -printf "%m \t %u:%g \t %P \n"
+
+###############
+# ldap.secret #
+###############
+
+echo
+echo "-------------[ ldap.secret permissions ]------------------"
+root_permission=$(stat /etc/ldap.secret | grep -c "Access: (0400/-r--------)")
+if [ $root_permission -ne 1 ]
+then
+	echo "WARNING: The permissions on /etc/ldap.secret are NOT 0400"
+else
+	echo "info: The permissions on /etc/ldap.secret are normal"
+fi
+
+#####################
+# set uid/gid stuff #
+#####################
+
+echo
+echo "-------------[ Set UID/GID file changes  ]------------------"
+echo
+	if [ -f /etc/logwatch/setid.log ]; then
+		if [ -f /etc/logwatch/setid.old.log ]; then
+			rm /etc/logwatch/setid.old.log
+		fi
+		mv /etc/logwatch/setid.log /etc/logwatch/setid.old.log
+	else
+		touch /etc/logwatch/setid.old.log
+	fi
+
+	#find / -not -fstype nfs -perm +4000 -printf "%m %M \t %u:%g \t %P \n"
+	#find / -not -fstype nfs -perm +2000 -printf "%m %M \t %u:%g \t %P \n"
+	find / -not -fstype nfs \( -perm -4000 -o -perm -2000 \) -printf "%m %M \t %u:%g \t %P \n" > /etc/logwatch/setid.log
+
+	diff /etc/logwatch/setid.log /etc/logwatch/setid/old.log
+exit 0
+
+############### This stuff needs more work ############################
+
+####################
+# /srv/admin stuff #
+####################
+
+
+echo
+echo "-------------[ /srv/admin permissions ]------------------"
+echo "         (/srv/admin/skel is excluded from this)"
+echo
+
+echo "Below Follows a list of files in /srv/admin that are world readable"
+find /srv/admin -not -fstype nfs -path '/srv/admin/skel' -prune -perm -o=r -printf "%m \t %P \n"
+
+echo
+echo "Below Follows a list of files in /srv/admin not owned by root"
+find /srv/admin -not -fstype nfs -path '/srv/admin/skel' -prune -not -gid 0 -not -uid 0 -printf "%m \t %u:%g \t %P \n"
+
+exit 0

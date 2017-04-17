@@ -1,0 +1,18 @@
+#!/bin/zsh
+
+year=$(date +%Y)
+month=$(date +%m)
+DAY=$(date +%d)
+logdir='/var/log/apache2/'
+
+find $logdir$year/$month/ -type f | xargs chmod 644
+find $logdir$year/ -type d | xargs chmod 755
+
+if [ $DAY -ne 1 ]; then
+  yesterday=$((DAY-1))
+  if [ $yesterday -lt 10 ]; then
+    find $logdir$year/$month/ -name "0$yesterday*log" -type f | xargs -n1 bzip2
+  else
+    find $logdir$year/$month/ -name "$yesterday*log" -type f | xargs -n1 bzip2
+  fi
+fi
