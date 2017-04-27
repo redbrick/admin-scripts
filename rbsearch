@@ -3,6 +3,7 @@
 # Quick ldap search tool
 # ver 0.1 sonic - I will never ever update this
 # ver 0.2 koffee - quick update & shell checking
+# ver 0.3 butlerx - add support for dcu AD
 
 SCRIPTNAME="rbsearch"
 EMAIL="bill.gates@hotmail.com"
@@ -11,6 +12,14 @@ FULLNAME="Bill Gates"
 
 SEARCH="ldapsearch -D cn=root,ou=ldap,o=redbrick -xLLL -y /etc/ldap.secret"
 
+function dcusearch () {
+	if [ ! -z $2 ]; then
+		SEARCH="$1 $2"
+	else
+		SEARCH=$1
+	fi
+	ldapsearch -x -h ad.dcu.ie -D "CN=rblookup,OU=Service Accounts,DC=ad,DC=dcu,DC=ie" -w $(</etc/ldap_dcu.secret) -b "OU=Students,DC=ad,DC=dcu,DC=ie" -s sub "($SEARCH)" cn gecos mail
+}
 
 case $1 in
 	-update)
@@ -46,25 +55,45 @@ case $1 in
 	-newbie)
 		$SEARCH "newbie=TRUE" uid
 	;;
+	-dcu)
+	case $2 in
+		username)
+			SEARCH="cn=$3"
+			dcusearch $SEARCH
+		;;
+		fullname)
+			if [ ! -z $4 ]; then
+				SEARCH="displayName=$3 $4"
+				dcusearch $SEARCH
+			else
+				echo "Usage: $SCRIPTNAME -dcu fullname $FULLNAME"
+			fi
+	esac
+	;;
 	-h)
 		echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] -[nick] -[fullname] query"
 		echo "eg. $SCRIPTNAME -altmail $EMAIL"
 		echo "    $SCRIPTNAME -uid $USERNAME"
 		echo "    $SCRIPTNAME -fullname $FULLNAME"
 		echo "    $SCRIPTNAME -update $USERNAME"
+		echo "    $SCRIPTNAME -dcu username $USERNAME"
+		echo "    $SCRIPTNAME -dcu fullname $FULLNAME"
 		echo ""
 		echo "Only fullname takes 2 arguments."
 		echo "All results will give just uid(s) apart from [-uid]"
 		echo "[-uid] prints all ldap info for that uid"
 	;;
 	*)
-		echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] -[nick] -[fullname] query"
+		echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] [-nick] [-fullname] [-dcu [username] [fullname]] query"
 		echo "eg. $SCRIPTNAME -altmail $EMAIL"
 		echo "    $SCRIPTNAME -uid $USERNAME"
 		echo "    $SCRIPTNAME -fullname $FULLNAME"
 		echo "    $SCRIPTNAME -update $USERNAME"
+		echo "    $SCRIPTNAME -dcu username $USERNAME"
+		echo "    $SCRIPTNAME -dcu fullname $FULLNAME"
 		echo ""
 		echo "Only fullname takes 2 arguments."
 		echo "All results will give just uid(s) apart from [-uid]"
 	;;
 esac
+
