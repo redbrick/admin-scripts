@@ -13,7 +13,7 @@ exit 0
 echo
 echo "-------------[ /root permissions ]------------------"
 root_permission=$(stat /root | grep -c "Access: (0700/drwx------)")
-if [ $root_permission -ne 1 ]
+if [ "$root_permission" -ne 1 ]
 then
 	echo "WARNING: The permissions on /root are NOT 0700"
 else
@@ -33,7 +33,7 @@ find /root -type f -not -gid 0 -not -uid 0 -printf "%m \t %u:%g \t %P \n"
 echo
 echo "-------------[ ldap.secret permissions ]------------------"
 root_permission=$(stat /etc/ldap.secret | grep -c "Access: (0400/-r--------)")
-if [ $root_permission -ne 1 ]
+if [ "$root_permission" -ne 1 ]
 then
 	echo "WARNING: The permissions on /etc/ldap.secret are NOT 0400"
 else

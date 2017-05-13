@@ -1,2 +1,0 @@
-ldapsearch -x -h ad.dcu.ie -D "CN=rblookup,OU=Service Accounts,DC=ad,DC=dcu,DC=ie" -w `cat /etc/ldap_dcu.secret` -b "OU=Students,DC=ad,DC=dcu,DC=ie" -s sub "(displayName=firstname surname)" cn gecos
-ldapsearch -x -h ad.dcu.ie -D "CN=rblookup,OU=Service Accounts,DC=ad,DC=dcu,DC=ie" -w `cat /etc/ldap_dcu.secret` -b "OU=Students,DC=ad,DC=dcu,DC=ie" -s sub "(cn=username)" cn gecos

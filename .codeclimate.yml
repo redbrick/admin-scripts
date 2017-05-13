@@ -1,0 +1,20 @@
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - bash
+      - python
+      - perl
+  fixme:
+    enabled: true
+  pep8:
+    enabled: true
+  radon:
+    enabled: false
+  shellcheck:
+    enabled: true
+ratings:
+  paths:
+  - "**"
+exclude_paths: []
