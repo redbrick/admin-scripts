@@ -1,3 +1,4 @@
+#!/bin/bash
 NUMBER=0
 
 for a in $(/srv/admin/scripts/rrs/useradm list_newbies); do

@@ -54,7 +54,7 @@ def mailgroup(ldif, frm, subject, body, prnt):
         if prnt:
             print(uid + ' - ' + ldap_cn + ' : ' + altmail)
         else:
-            #Send mail to each
+            # Send mail to each
             print('Send mail to ' + ldap_cn + ' using ' + altmail + ' (y|n)?')
             send = input('default(y): ')
             if(send == 'n') or (send == 'N'):
@@ -65,8 +65,8 @@ def mailgroup(ldif, frm, subject, body, prnt):
 
 def check_args(args):
     """check args for sending"""
-    if(args.GROUPS is None and args.FROM != None and args.TO != None and args.SUBJECT != None and
-       args.MSG != None):
+    if(args.GROUPS is None and args.FROM is not None and args.TO is not None and
+       args.SUBJECT is not None and args.MSG is not None):
         return not args.PRINT
     return False
 
@@ -86,7 +86,7 @@ def main():
     parser.add_argument('-s', dest='SUBJECT', type=str, help='Subject of mail.')
     args = parser.parse_args()
 
-    if args.GROUPS != None:
+    if args.GROUPS is not None:
         if ',' in args.GROUPS:
             search_params = args.GROUPS.split(',')
         else:
@@ -97,17 +97,17 @@ def main():
         else:
             ldapsearch += '"(|'
             for i in search_params:
-                ldapsearch += '(objectClass='+ i +')'
+                ldapsearch += '(objectClass=' + i + ')'
             ldapsearch += ')" uid cn altmail'
 
         ldif = os.popen(ldapsearch).read()
-        if args.FROM != None and args.SUBJECT != None and args.MSG != None:
+        if args.FROM is not None and args.SUBJECT is not None and args.MSG is not None:
             mailgroup(ldif, args.FROM, args.SUBJECT, args.MSG, args.PRINT)
         else:
             mailgroup(ldif, '', '', '', args.PRINT)
         exit()
 
-    if args.MSG != None:
+    if args.MSG is not None:
         with open(args.MSG, 'r') as content:
             args.MSG = content.read()
 

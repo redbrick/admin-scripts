@@ -14,10 +14,10 @@ def modify_template(user_id):
     ldap_dn += "\nchangetype: modify\ndelete: yearsPaid\n\n"
     print(ldap_dn)
 
-#open ldif
+# open ldif
 with open(sys.argv[1], 'r') as content:
     LDIF = content.read()
-#split by user
+# split by user
 GETDN = LDIF.split('dn: uid=')
 for i in GETDN:
     try:

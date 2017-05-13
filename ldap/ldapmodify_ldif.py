@@ -20,16 +20,16 @@ def modify_template(l_uid, l_years_paid, l_newbie, l_reserved):
             mod_temp += "\n"
         print(mod_temp)
 
-#open ldif
+# open ldif
 with open(sys.argv[1], 'r') as content:
     LDIF = content.read()
-#split by user
+# split by user
 GETDN = LDIF.split('dn: uid=')
 for i in range(1, len(GETDN)):
     thisdn = GETDN[i].split('\n')
     newbie = 'NONE'
     reserved = False
-    #split by users variables
+    # split by users variables
     for j in range(0, len(thisdn)):
         x = thisdn[j].rstrip()
         uid = thisdn[0].rstrip()
@@ -40,7 +40,8 @@ for i in range(1, len(GETDN)):
                 years_paid = str(int(x.split()[1])).strip()
             elif x.startswith("newbie:"):
                 newbie = '1'
-            else:	continue
+            else:
+                continue
         except IndexError:
             break
     modify_template(uid, years_paid, newbie, reserved)

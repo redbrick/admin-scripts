@@ -10,8 +10,16 @@ engines:
     enabled: true
   pep8:
     enabled: true
+    checks:
+      E501:
+        enabled: false
+      E302:
+        enabled: false
   radon:
-    enabled: false
+    enabled: true
+    checks:
+      Complexity:
+        enabled: false
   shellcheck:
     enabled: true
 ratings:

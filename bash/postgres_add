@@ -1,2 +1,36 @@
 #!/bin/bash
-su postgres -c "createuser --no-superuser --no-createdb --no-createrole $1; createdb $1 -O $1"
+
+SCRIPTNAME="postgres_add"
+USERNAME="micro"
+
+function usage () {
+    echo "Usage: $SCRIPTNAME [ -u | --username ] user"
+    echo "eg. $SCRIPTNAME -u $USERNAME"
+    echo "    $SCRIPTNAME --username $USERNAME"
+    echo ""
+}
+
+if [[ $# -eq 0 ]]; then
+  echo "Enter the user to create the db for"
+  read -r USER
+fi
+
+while [[ $# -gt 1 ]]; do
+  key="$1"
+  case $key in
+    -u|--username)
+      USER="$2"
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    *)
+      echo Unrecognised flag
+      usage
+    ;;
+  esac
+  shift
+done
+
+su postgres -c "createuser --no-superuser --no-createdb --no-createrole $USER; createdb $USER -O $USER"

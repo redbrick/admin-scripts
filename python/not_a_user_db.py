@@ -17,7 +17,7 @@ def get_courses(db_name):
         return False
     return True
 
-#start processing input
+# start processing input
 if sys.argv[1]:
     try:
         FILENAME = sys.argv[1]

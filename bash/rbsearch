@@ -21,6 +21,20 @@ function dcusearch () {
   ldapsearch -x -h ad.dcu.ie -D "CN=rblookup,OU=Service Accounts,DC=ad,DC=dcu,DC=ie" -w "$(</etc/ldap_dcu.secret)" -b "OU=Students,DC=ad,DC=dcu,DC=ie" -s sub "($SEARCH)" cn gecos mail
 }
 
+function usage () {
+  echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] [-nick] [-fullname] [--dcu [username] [fullname]] query"
+  echo "eg. $SCRIPTNAME -altmail $EMAIL"
+  echo "    $SCRIPTNAME -uid $USERNAME"
+  echo "    $SCRIPTNAME -fullname $FULLNAME"
+  echo "    $SCRIPTNAME -update $USERNAME"
+  echo "    $SCRIPTNAME -dcu username $USERNAME"
+  echo "    $SCRIPTNAME -dcu fullname $FULLNAME"
+  echo ""
+  echo "Only fullname takes 2 arguments."
+  echo "All results will give just uid(s) apart from [-uid]"
+  echo "[-uid] prints all ldap info for that uid"
+}
+
 case $1 in
   -update)
     if [ ! -z "$3" ]; then
@@ -32,7 +46,7 @@ case $1 in
   -altmail)
     $SEARCH "altmail=$2" uid
   ;;
-  -uid)
+  -uid|--user|-u)
     $SEARCH "uid=$2"
   ;;
   -id)
@@ -54,7 +68,7 @@ case $1 in
   -newbie)
     $SEARCH "newbie=TRUE" uid
   ;;
-  -dcu)
+  --dcu)
   case $2 in
     username)
       SEARCH="cn=$3"
@@ -69,29 +83,10 @@ case $1 in
       fi
   esac
   ;;
-  -h)
-    echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] -[nick] -[fullname] query"
-    echo "eg. $SCRIPTNAME -altmail $EMAIL"
-    echo "    $SCRIPTNAME -uid $USERNAME"
-    echo "    $SCRIPTNAME -fullname $FULLNAME"
-    echo "    $SCRIPTNAME -update $USERNAME"
-    echo "    $SCRIPTNAME -dcu username $USERNAME"
-    echo "    $SCRIPTNAME -dcu fullname $FULLNAME"
-    echo ""
-    echo "Only fullname takes 2 arguments."
-    echo "All results will give just uid(s) apart from [-uid]"
-    echo "[-uid] prints all ldap info for that uid"
+  -h|--help)
+    usage
   ;;
   *)
-    echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] [-nick] [-fullname] [-dcu [username] [fullname]] query"
-    echo "eg. $SCRIPTNAME -altmail $EMAIL"
-    echo "    $SCRIPTNAME -uid $USERNAME"
-    echo "    $SCRIPTNAME -fullname $FULLNAME"
-    echo "    $SCRIPTNAME -update $USERNAME"
-    echo "    $SCRIPTNAME -dcu username $USERNAME"
-    echo "    $SCRIPTNAME -dcu fullname $FULLNAME"
-    echo ""
-    echo "Only fullname takes 2 arguments."
-    echo "All results will give just uid(s) apart from [-uid]"
+    usage
   ;;
 esac
