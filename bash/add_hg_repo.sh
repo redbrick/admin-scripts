@@ -11,13 +11,13 @@ WEBHOST=morpheus
 ALLOW_ARCHIVE="gz zip bz2"
 CHOWN=/bin/chown
 
-if [[ $HOSTNAME != $WEBHOST ]]; then
+if [[ $HOSTNAME != "$WEBHOST" ]]; then
 	echo "This script must be run on the web server ($WEBHOST)."
 	exit 1
 fi
 
 echo "What will this repository be called?"
-read REPONAME
+read -r REPONAME
 
 if [[ -e $COLLECTION/$REPONAME ]]; then
 	echo "This repository already exists! Aborting."
@@ -25,13 +25,13 @@ if [[ -e $COLLECTION/$REPONAME ]]; then
 fi
 
 echo "What users should have write access to $REPONAME? (space separated list)"
-read USERLIST
+read -r USERLIST
 
 echo "Enter a brief description of this repository:"
-read DESCRIPTION
+read -r DESCRIPTION
 
 echo "Enter a primary contact in the form Name <emailaddress@host.com>:"
-read CONTACT
+read -r CONTACT
 
 echo "Please confirm that the following details are correct:"
 echo "Repository name: $REPONAME"
@@ -44,7 +44,7 @@ ANSWER=""
 
 while [[ $ANSWER != "y" ]] && [[ $ANSWER != "n" ]]; do
 	echo -n "(y/n) "
-	read ANSWER
+	read -r ANSWER
 done
 
 if [[ $ANSWER == "n" ]]; then
@@ -53,9 +53,9 @@ if [[ $ANSWER == "n" ]]; then
 fi
 
 echo "Init repository..."
-$HG init $COLLECTION/$REPONAME
+$HG init $COLLECTION/"$REPONAME"
 echo "Create configuration file..."
-cat > $COLLECTION/$REPONAME/.hg/hgrc << EOF
+cat > $COLLECTION/"$REPONAME"/.hg/hgrc << EOF
 [web]
 allow_push = $USERLIST
 contact = $CONTACT
@@ -63,7 +63,7 @@ description = $DESCRIPTION
 allow_archive = $ALLOW_ARCHIVE
 EOF
 echo "Fix permissions..."
-$CHOWN -R $APACHE_UID:$APACHE_GID $COLLECTION/$REPONAME
+$CHOWN -R $APACHE_UID:$APACHE_GID $COLLECTION/"$REPONAME"
 echo "Operation complete"
 
 exit 0

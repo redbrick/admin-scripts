@@ -9,38 +9,26 @@ dcu=$(ldapsearch -xLLL "(gidnumber=31382)" | grep dn | awk -F = '{print $2}' | a
 projects=$(ldapsearch -xLLL "(gidnumber=1014)" | grep dn | awk -F = '{print $2}' | awk -F , '{print $1}')
 intersocs=$(ldapsearch -xLLL "(gidnumber=1016)" | grep dn | awk -F = '{print $2}' | awk -F , '{print $1}')
 
-list=$(echo "$clubs\n$socs\n$dcu\n$projects\n$intersocs")
+list="$clubs\n$socs\n$dcu\n$projects\n$intersocs"
 
 msg=/srv/admin/scripts/accounts.d/message.txt
 
 #for user in $(ls /home/society)
 echo "You are about to disable all Impersonal RedBrick Accounts - To proceed type \"Proceed\", Print will show the accounts about to be diabled"
-read ans
+read -r ans
 
 if [ "$ans" = "Proceed" ]; then
-	for user in $list
-	do
-	    useradm resetpw -M $user
-	    useradm setshell $user /usr/local/shells/disabled ]
-	    altmail=$(useradm show $user | grep altmail | awk '{print $2}')
-	    cat $msg | mutt -s "Your RedBrick Account" $user $altmail
-	done
-
+  for user in $list; do
+    useradm resetpw -M "$user"
+    useradm setshell "$user" /usr/local/shells/disabled
+    altmail=$(useradm show "$user" | grep altmail | awk '{print $2}')
+    mutt -s "Your RedBrick Account" "$user" "$altmail" < $msg
+  done
 elif [ "$ans" = "Print" ]; then
-	for i in $list
-	do
-		echo $i
-	done
-
+  for i in $list; do
+    echo "$i"
+  done
 else
-	echo Exiting
-	exit
+  echo Exiting
+  exit
 fi
-
-#for user in `ls /home/club`
-#do
-#    useradm resetpw -M $user
-#    useradm setshell $user /usr/local/shells/disabled
-#    altmail=$(useradm show $user | grep altmail | awk '{print $2}')
-#    cat $msg | mutt -s "Your Club RedBrick Account" $user $altmail
-#done
