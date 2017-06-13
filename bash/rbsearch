@@ -12,7 +12,7 @@ USERNAME="microbg"
 FULLNAME="Bill Gates"
 VERSION="0.4"
 
-SEARCH="ldapsearch -D cn=root,ou=ldap,o=redbrick -xLLL -y /etc/ldap.secret "
+SEARCH="ldapsearch -D cn=root,ou=ldap,o=redbrick -xLLL -y /etc/ldap.secret"
 
 function dcuSearch () {
   DCUSEARCH=""
@@ -124,6 +124,7 @@ while [[ $# -gt 1 ]]; do
     ;;
     -v|--version)
       echo Version $VERSION
+    ;;
     *)
       usage
     ;;
