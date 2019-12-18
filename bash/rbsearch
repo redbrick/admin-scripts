@@ -4,89 +4,130 @@
 # ver 0.1 sonic - I will never ever update this
 # ver 0.2 koffee - quick update & shell checking
 # ver 0.3 butlerx - add support for dcu AD
+# ver 0.4 butlerx - support for more flags and multiple searches at once
 
 SCRIPTNAME="rbsearch"
 EMAIL="bill.gates@hotmail.com"
 USERNAME="microbg"
 FULLNAME="Bill Gates"
+VERSION="0.4"
 
 SEARCH="ldapsearch -D cn=root,ou=ldap,o=redbrick -xLLL -y /etc/ldap.secret"
 
-function dcusearch () {
-  if [ ! -z "$2" ]; then
-    SEARCH="$1 $2"
-  else
-    SEARCH=$1
-  fi
-  ldapsearch -x -h ad.dcu.ie -D "CN=rblookup,OU=Service Accounts,DC=ad,DC=dcu,DC=ie" -w "$(</etc/ldap_dcu.secret)" -b "OU=Students,DC=ad,DC=dcu,DC=ie" -s sub "($SEARCH)" cn gecos mail
+function dcuSearch () {
+  DCUSEARCH=""
+  for i in "$@"; do
+    DCUSEARCH="$DCUSEARCH $i"
+  done
+  echo "======== DCU AD search results ========"
+  ldapsearch -x -h ad.dcu.ie -D "CN=rblookup,OU=Service Accounts,DC=ad,DC=dcu,DC=ie" -w "$(</etc/ldap_dcu.secret)" -b "OU=Students,DC=ad,DC=dcu,DC=ie" -s sub "($DCUSEARCH)" cn gecos mail | awk '/cn:|gecos:|mail:/ { print }'
+  echo "======================================="
 }
 
 function usage () {
-  echo "Usage: $SCRIPTNAME [-altmail] [-uid] [-id] [-name] [-nick] [-fullname] [--dcu [username] [fullname]] query"
-  echo "eg. $SCRIPTNAME -altmail $EMAIL"
-  echo "    $SCRIPTNAME -uid $USERNAME"
-  echo "    $SCRIPTNAME -fullname $FULLNAME"
-  echo "    $SCRIPTNAME -update $USERNAME"
-  echo "    $SCRIPTNAME -dcu username $USERNAME"
-  echo "    $SCRIPTNAME -dcu fullname $FULLNAME"
+  echo "Usage: $SCRIPTNAME [--mail | --altmail] [-u | --uid | --user] [--id] [-f | --fullname | --name] [-nick] [-i | info] [--dcu [-u | --username]| [-f | --fullname]] query"
+  echo "eg. $SCRIPTNAME --altmail $EMAIL"
+  echo "    $SCRIPTNAME --uid $USERNAME"
+  echo "    $SCRIPTNAME --fullname $FULLNAME"
+  echo "    $SCRIPTNAME --info [ $FULLNAME | $EMAIL ]"
+  echo "    $SCRIPTNAME --dcu --username $USERNAME"
+  echo "    $SCRIPTNAME --dcu --fullname $FULLNAME"
   echo ""
   echo "Only fullname takes 2 arguments."
   echo "All results will give just uid(s) apart from [-uid]"
   echo "[-uid] prints all ldap info for that uid"
 }
 
-case $1 in
-  -update)
-    if [ ! -z "$3" ]; then
-      $SEARCH "cn=*$2*$3" uid yearsPaid loginShell
-    else
-      echo "Usage: $SCRIPTNAME -fullname $FULLNAME"
-    fi
-  ;;
-  -altmail)
-    $SEARCH "altmail=$2" uid
-  ;;
-  -uid|--user|-u)
-    $SEARCH "uid=$2"
-  ;;
-  -id)
-    $SEARCH "id=$2" uid
-  ;;
-  -name)
-    $SEARCH "cn=*$2*" uid
-  ;;
-  -nick)
-    $SEARCH "gecos=*$2*" uid
-  ;;
-  -fullname)
-    if [ ! -z "$3" ]; then
-      $SEARCH "cn=*$2*$3" uid
-    else
-      echo "Usage: $SCRIPTNAME -fullname $FULLNAME"
-    fi
-  ;;
-  -newbie)
-    $SEARCH "newbie=TRUE" uid
-  ;;
-  --dcu)
-  case $2 in
-    username)
-      SEARCH="cn=$3"
-      dcusearch "$SEARCH"
-    ;;
-    fullname)
-      if [ ! -z "$4" ]; then
-        SEARCH="displayName=$3 $4"
-        dcusearch "$SEARCH"
+while [[ $# -gt 1 ]]; do
+  key="$1"
+  case $key in
+    -update|--update|--info|-i)
+      if [ ! -z "$3" ]; then
+        echo "==== LDAP Search for $2 $3 ===="
+        $SEARCH "cn=*$2*$3" uid yearsPaid loginShella &&
+        echo "======================================="
+        shift; shift
+      elif [ ! -z "$2" ]; then
+        echo "==== LDAP Search for $2 ===="
+        $SEARCH "altmail=$2" uid yearsPaid loginShell &&
+        echo "======================================="
+        shift
       else
-        echo "Usage: $SCRIPTNAME -dcu fullname $FULLNAME"
+        echo "Usage: $SCRIPTNAME --info [ $FULLNAME | $EMAIL ]"
       fi
+      shift
+    ;;
+    -altmail|--mail|--altmail)
+      echo "==== LDAP Search for $2 ===="
+      $SEARCH "altmail=$2" uid altmail &&
+      echo "======================================="
+      shift
+    ;;
+    -uid|--user|-u|--uid)
+      echo "==== LDAP Search for $2 ===="
+      $SEARCH "uid=$2" &&
+      echo "======================================="
+      shift
+    ;;
+    -id|--id)
+      echo "==== LDAP Search for $2 ===="
+      $SEARCH "id=$2" uid id &&
+      echo "======================================="
+      shift
+    ;;
+    -nick|--nick|-n)
+      echo "==== LDAP Search for $2 ===="
+      $SEARCH "gecos=*$2*" uid gecos &&
+      echo "======================================="
+      shift
+    ;;
+    -fullname|-name|-f|--name|--fullname)
+      if [ ! -z "$3" ]; then
+        echo "==== LDAP Search for $2 $3 ===="
+        $SEARCH "cn=*$2*$3" uid cn &&
+        echo "======================================="
+        shift; shift
+      else
+        echo "Usage: $SCRIPTNAME --fullname $FULLNAME"
+      fi
+    ;;
+    -newbie|--newbie|--noob)
+      echo "======= LDAP Search for newbies ======="
+      $SEARCH "newbie=TRUE" uid &&
+      echo "======================================="
+    ;;
+    --dcu)
+      case $2 in
+        --username|-u)
+          SEARCHARG="cn=$3"
+          dcuSearch "$SEARCHARG" &&
+          shift
+        ;;
+        --fullname|-f)
+          if [ ! -z "$4" ]; then
+            SEARCHARG="displayName=$3 $4"
+            dcuSearch "$SEARCHARG" &&
+            shift; shift
+          else
+            echo "Usage: $SCRIPTNAME --dcu --fullname $FULLNAME"
+            shift
+          fi
+        ;;
+        *)
+          usage
+        ;;
+      esac
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    -v|--version)
+      echo Version $VERSION
+    ;;
+    *)
+      usage
+    ;;
   esac
-  ;;
-  -h|--help)
-    usage
-  ;;
-  *)
-    usage
-  ;;
-esac
+  shift
+done
